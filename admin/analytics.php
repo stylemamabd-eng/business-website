@@ -40,11 +40,14 @@ $where_sql = implode(" AND ", $where_clauses);
 // Since SQlite uses UTC or local depending on config, let's use a 5 minutes threshold
 $active_threshold = date('Y-m-d H:i:s', time() - 300);
 // Wait, SQLite CURRENT_TIMESTAMP is UTC. So we check last_activity based on SQLite's datetime
-$active_stmt = $pdo->prepare("SELECT COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= datetime('now', '-5 minutes')");
+$driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+$time_clause = ($driver === 'pgsql') ? "NOW() - INTERVAL '5 minutes'" : "datetime('now', '-5 minutes')";
+
+$active_stmt = $pdo->prepare("SELECT COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= $time_clause");
 $active_stmt->execute();
 $active_users_count = $active_stmt->fetch()['count'];
 
-$active_loc_stmt = $pdo->prepare("SELECT country, city, COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= datetime('now', '-5 minutes') GROUP BY country, city ORDER BY count DESC");
+$active_loc_stmt = $pdo->prepare("SELECT country, city, COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= $time_clause GROUP BY country, city ORDER BY count DESC");
 $active_loc_stmt->execute();
 $active_locations = $active_loc_stmt->fetchAll();
 

@@ -40,7 +40,9 @@
 
     <!-- Real-Time Visitors widget on Dashboard Home -->
     <?php
-    $active_stmt = $pdo->prepare("SELECT COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= datetime('now', '-5 minutes')");
+    $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+    $time_clause = ($driver === 'pgsql') ? "NOW() - INTERVAL '5 minutes'" : "datetime('now', '-5 minutes')";
+    $active_stmt = $pdo->prepare("SELECT COUNT(DISTINCT session_id) count FROM page_visits WHERE last_activity >= $time_clause");
     $active_stmt->execute();
     $active_users_count = $active_stmt->fetch()['count'];
     ?>
