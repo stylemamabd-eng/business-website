@@ -12,9 +12,9 @@ if ($db_url) {
     $url_parsed = parse_url($db_url);
     $db_host = $url_parsed['host'] ?? '';
     $db_port = $url_parsed['port'] ?? 5432;
-    $db_user = $url_parsed['user'] ?? '';
-    $db_pass = $url_parsed['pass'] ?? '';
-    $db_name = ltrim($url_parsed['path'] ?? '', '/');
+    $db_user = urldecode($url_parsed['user'] ?? '');
+    $db_pass = urldecode($url_parsed['pass'] ?? '');
+    $db_name = urldecode(ltrim($url_parsed['path'] ?? '', '/'));
 
     try {
         $pdo = new PDO(
